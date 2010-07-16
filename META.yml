@@ -1,0 +1,35 @@
+---
+name: Firepear-Catechesis
+version: 1.000
+author:
+  - 'Firepear Informatics <firepear@cpan.org>'
+abstract: The great new Firepear::Catechesis!
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+build_requires:
+  Test::More: 0
+requires:
+  JSON: 0
+configure_requires:
+  Module::Build: 0.35
+provides:
+  Firepear::Catechesis:
+    file: lib/Firepear/Catechesis.pm
+    version: 1.000
+  Firepear::Catechesis::Parser:
+    file: lib/Firepear/Catechesis/Parser.pm
+    version: 1.000
+  Firepear::Catechesis::TAP:
+    file: lib/Firepear/Catechesis/TAP.pm
+    version: 1.000
+  Firepear::Catechesis::Util:
+    file: lib/Firepear/Catechesis/Util.pm
+    version: 1.000
+  Firepear::Catechesis::Verifier:
+    file: lib/Firepear/Catechesis/Verifier.pm
+    version: 1.000
+generated_by: Module::Build version 0.35
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4

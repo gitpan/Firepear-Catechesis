@@ -1,0 +1,13 @@
+# this is a test file
+
+# it contains two test stanzas, which is are empty
+
+begin environment
+end
+
+begin test
+  send foo
+  expect bar
+end
+
+# end of file

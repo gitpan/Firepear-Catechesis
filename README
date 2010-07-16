@@ -1,0 +1,59 @@
+Firepear-Catechesis
+
+Catechesis is a tool for executing language-agnostic test suites, like
+tests for specifications which may have multiple implementations, or
+tests APIs which need to be tested across multiple versions of an
+implementation.
+
+Instead of writing unit tests in a programming language, tests are
+expressed as scripts. Each script contains one or more messages, with
+each message having (at a minimum) a directive and an expected
+response.
+
+Catechesis produces TAP as output, so its results can be interpreted
+by the existing body of tools which speak the format.
+
+For more information on using Catechesis, see the website
+(http://firepear.net/catechesis/) or the file ./docs/main.html
+included in this distribution.
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+	perl Build.PL
+	./Build
+	./Build test
+	./Build install
+
+SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the
+perldoc command
+
+    perldoc Firepear::Catechesis
+
+which will point you to more specific documentation, if needed.
+
+You can also look for information at:
+
+    RT, CPAN's request tracker
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Firepear-Catechesis
+
+    AnnoCPAN, Annotated CPAN documentation
+        http://annocpan.org/dist/Firepear-Catechesis
+
+    CPAN Ratings
+        http://cpanratings.perl.org/d/Firepear-Catechesis
+
+    Search CPAN
+        http://search.cpan.org/dist/Firepear-Catechesis/
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2010 Firepear Informatics
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+

@@ -1,0 +1,87 @@
+# this is the catechesis example test suite
+
+# it should be used with *all* the example shims in this directory.
+# for more information, see the docs.
+
+# first we need to set out test plan to the number of tests in this
+# file
+begin environment
+  diag Running the standard Catechesis test suite!
+  plan 11
+end
+
+# now we'll run some successful tests
+begin test
+  diag These tests should succeed if you have implemented the spec commands correctly
+  desc Simple addition
+  send { "command":"add", "operands":[2, 2] }
+  expect { "command":"add", "result":4 }
+end
+
+begin test
+  desc Subtraction
+  send { "command":"subtract", "operands":[5, 3] }
+  expect { "command":"subtract", "result":2 }
+end
+
+begin test
+  desc Multiplication
+  send { "command":"multiply", "operands":[5, 3] }
+  expect { "command":"multiply", "result":15 }
+end
+
+begin test
+  desc Division
+  send { "command":"divide", "operands":[10, 2] }
+  expect { "command":"divide", "result":5 }
+end
+
+# followed by API-specified exceptions
+begin test
+  diag These should pass if you have implemented spec error handling correctly
+  desc Null send produces "no command" err
+  send {}
+  expect { "command":"", "result":"ERROR", \
+           "err_msg":"No command found. Invalid message"}
+end
+
+begin test
+  desc Bad command
+  send { "command":"foo" }
+  expect { "command":"foo", "result":"ERROR", \
+           "err_msg":"Unknown command: foo" }
+end
+
+begin test
+  desc 'operands' is not list
+  send { "command":"add", "operands":1 }
+  expect {"command":"add", "result":"ERROR", \
+          "err_msg":"The value of operands must be usable as a list" }
+end
+
+begin test
+  desc Missing operands 1
+  send { "command":"add" }
+  expect {"command":"add", "result":"ERROR", \
+          "err_msg":"Missing operand: add requires 2; I found 0"}
+end
+begin test
+  desc Missing operands 2
+  send { "command":"add", "operands":[1] }
+  expect {"command":"add", "result":"ERROR", \
+          "err_msg":"Missing operand: add requires 2; I found 1"}
+end
+
+begin test
+  desc Non-integer operands
+  send { "command":"add", "operands":[1,"q"] }
+  expect {"command":"add", "result":"ERROR", \
+          "err_msg":"Non-integer operand found: q"}
+end
+
+begin test
+  desc Division by zero
+  send { "command":"divide", "operands":[1,0] }
+  expect {"command":"divide", "result":"ERROR", \
+          "err_msg":"Division by zero is undefined"}
+end

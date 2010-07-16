@@ -1,0 +1,20 @@
+# this is a test file
+
+# 3 correct stanzas
+
+begin environment
+  plan 2
+end
+
+begin test
+  send 123
+  expect 456
+end
+
+begin test
+  desc letters
+  send a b c
+  expect d e f
+end
+
+# end of file

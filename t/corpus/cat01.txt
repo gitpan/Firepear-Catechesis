@@ -1,0 +1,11 @@
+# this is a test file
+
+# test with desc
+begin test
+  send { 1, 2, 3, \
+         4, 5, 6 }
+  expect { "value":["a", "b", "c", "d", "e", "f"] }
+  desc fake data test
+end
+
+# end of file

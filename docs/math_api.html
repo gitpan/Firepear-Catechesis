@@ -1,0 +1,106 @@
+<h3>The Math API</h3>
+<p>
+  This is a very simple API which specifies four mathematical
+  operations and several modes of error handling. It is the model API
+  for Catechesis examples.
+</p>
+
+<h4>Version</h4>
+<p>
+  This is version 1.000 of 9 Jul 2010.
+</p>
+
+<h4>Data Formatting</h4>
+<p>
+  The <code>send</code> object should be formatted thus:
+</p>
+<pre>
+  { "command":"OPERATION",
+    "operands":[ x, y, ..., z ] }
+</pre>
+<p>
+  Where <code>OPERATION</code> is one of the operations defined
+  below, and <code>x, y, ..., z</code> are the values to be acted
+  upon..
+<p>
+  The returned data (and the <code>expect</code> value) should be
+  formatted thus:
+</p>
+<pre>
+  { "command":"OPERATION", "result":RESULT }
+</pre>
+<p>
+  Where <code>OPERATION</code> is the operation specified in
+  the <code>sent</code> object, and <code>RESULT</code> is the result
+  of evaluating the given operation with the given operands.
+</p>
+<p>
+  In the case of an error, the value of the <code>"result"</code> key
+  should be the string <code>"ERROR"</code>, and a third
+  key, <code>"err_msg"</code>, should be added. It will hold the
+  human-readable message describing the problem.
+</p>
+<pre>
+  { "command":"OPERATION", "result":"ERROR", "err_msg":"MESSAGE" }
+</pre>
+
+<h4>Operations</h4>
+<p>
+  There are five valid operations:
+</p>
+<dl>
+  <dt>add</dt>
+  <dd>
+    Expects two integer operands. The operands
+    will be added together and the result returned.
+  </dd>
+  <dt>subtract</dt>
+  <dd>
+    Expects two integer operands. The second
+    will be subtracted from the first and the result returned.
+  </dd>
+  <dt>multiply</dt>
+  <dd>
+    Expects two integer operands. The operands
+    will be multiplied together and the result returned.
+  </dd>
+  <dt>divide</dt>
+  <dd>
+    Expects two integer operands. The first
+    will be divided by the second and the result returned.
+  </dd>
+  <dt>quit</dt>
+  <dd>
+    A special case which instructs the program to terminate
+    execution. Has no operands.
+  </dd>
+</dl>
+
+<h4>Errors</h4>
+<p>
+  If no command is found, <code>err_msg</code> should be set to "No
+  command found. Invalid message".
+</p>
+<p>
+  If an unrecognized command is found, <code>err_msg</code> should be
+  set to "Unknown command: <code>COMMAND</code>".
+</p>
+<p>
+  If the value of <code>operands</code> does not evaluate to a
+  list, <code>err_msg</code> should be set to "The value
+  of <code>operands</code> must be usable as a list".
+<p>
+  If an operand is missing, <code>err_msg</code> should be set to "Missing
+  operand: <code>OPERATION</code> requires <code>X</code>
+  but <code>Y</code> were found".
+</p>
+<p>
+  If an operand is not an integer where it is required to
+  be, <code>err_msg</code> should be set to "Non-integer operand
+  found: <code>OPERAND</code>".
+</p>
+<p>
+  If the second operand of a <code>divide</code> command is
+  zero, <code>err_msg</code> should be set to "Division by zero is
+  undefined".
+</p>

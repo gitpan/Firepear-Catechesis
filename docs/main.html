@@ -1,0 +1,180 @@
+<h3>Design</h3>
+
+<p>There are four components in the system:</p>
+
+<ul>
+<li>The <em>driver</em> program</li>
+<li>The <em>watchdog</em> program</li>
+<li>One or more <em>shim</em> programs</li>
+<li>One or more <em>test script</em> files</li>
+</ul>
+
+<p>
+  The <em>driver</em> reads the <em>test scripts</em> and asks
+  the <em>shim(s)</em> to evaluate the individual tests therein. It
+  then checks the shim's answers against expected values, which are
+  also contained in the test scripts.
+</p>
+<p>
+  The <em>watchdog</em> listens for messages from the driver about its
+  activities. If it does not hear from the driver within a certain
+  time-frame, it attempts to kill the driver and any known shims
+  before shutting itself down.
+</p>
+<p>
+  The Catechesis distribution includes the driver, which is written in
+  Perl 5. One shim is needed for each implementation of the spec or
+  API you need to test, and it should be written in the same language
+  as your implementation.
+</p>
+
+<h3 id="run">Running Tests</h3>
+<p>
+  For complete documentation, see <code>'man catechist'</code> after
+  installing Catechesis. The general form is:
+</p>
+<pre>catechist --shim SHIM [OPTIONS] TEST_FILE [TEST_FILE..]</pre>
+<p>
+  So to run the example suite from within the Catechesis distribution:
+</p>
+<pre>$ ./bin/catechist --shim ./examples/math.pl ./examples/test_suite.txt</pre>
+
+<h3 id="scripts">Writing Test Scripts</h3>
+<p>
+  Test script files contain <em>stanzas</em> of various
+  types, <em>comments</em>, and blank lines. Leading whitespace is
+  consumed before any other parsing is done, so scripts may be
+  indented however is most readable.
+</p>
+<p>
+  Lines which begin with a pound/hash are comments. There are no
+  multi-line comments, and hashes inside a line are not recognized as
+  comments.
+</p>
+
+<pre># this line is a comment and will be ignored
+# so will this one
+but this one isn't # and this text isn't either
+</pre>
+
+<h4>Stanzas</h4>
+<p>
+  Everything in a test script, except comments, must be contained in a
+  stanza.
+</p>
+<pre>begin [type]
+    [directive_name] [directive_value] 
+end
+</pre>
+<p>
+  Stanzas are delimited by lines with <code>begin</code>
+  or <code>end</code> as the first word.
+</p>
+<p>
+  Every stanza has a <em>type</em>, which is given on
+  the <code>begin</code> line. There are two valid types of
+  stanzas: <code>test</code> and <code>environment</code>.
+</p>
+<p>
+Stanzas contain <em>directives</em>, which are instructions on what
+should be done.
+</p>
+
+
+<h4>Directives</h4>
+<p>
+  The first word in a directive line is the directive
+  <em>name</em>. The remainder of the line is the
+  directive <em>value</em>. Values may span more than one physical
+  line by ending lines with a backslash:
+</p>
+<pre>begin [type]
+    directive1 all these words become the value of the "directive1" directive
+    # the next directive spans three physical lines
+    directive2 text \
+               more text\
+               still more text
+end
+</pre>
+<p>
+  The value of <code>directive2</code> would be 'text more text still
+  more text'.
+</p>
+<p>
+  Environment stanzas may contain two directives:
+</p>
+<dl>
+  <dt><code>plan</code></dt>
+  <dd>
+    Specifies how many tests are intended to be run in this script. A
+    plan must be given before a test stanza is encountered. If the
+    actual number run does not match the plan, the script as a whole
+    will be considered a failure.
+  </dd>
+  <dt><code>diag</code></dt>
+  <dd>
+    Causes its value to be printed as a diagnostic line in the TAP
+    output stream
+  </dd>
+</dl>
+<p>
+  Test stanzas may contain four directives, two of which are required:
+</p>
+<dl>
+  <dt><code>send</code></dt>
+  <dd>
+    Required. The JSON which will be sent to the shim, carrying
+    instructions and data for the test.
+  </dd>
+  <dt><code>expect</code></dt>
+  <dd>
+    Required. The JSON which you expect to get from the shim after it
+    has carried out the instructions contained in
+    the <code>send</code> directive.
+  </dd>
+  <dt><code>desc</code></dt>
+  <dd>
+    A freeform text description of the test, which will be printed in
+    the TAP output stream alongside the test result
+  </dd>
+  <dt><code>diag</code></dt>
+  <dd>
+    Causes its value to be printed as a diagnostic line in the TAP
+    output stream
+  </dd>
+</dl>
+<p>
+  The format of the <code>send</code> and <code>expect</code>
+  directives are between you and your shim, so long as they are valid
+  JSON and vivify into a hash/dictionary/object. You will likely want
+  them to mirror your spec or API. See the
+  example <A href="/catechesis/math.shtml">Math API</a> and the
+  <a href="http://github.com/firepear/Catechesis/blob/master/examples/test_suite.txt">standard
+  test script</a> for an example.
+</p>
+
+
+<h3 id="shims">Writing Shims</h3>
+<p>
+  Shims are uncomplicated. They are simple programs which form a thin
+  interface between Catechesis and the implementation you are testing
+  (hence: <em>shim</em>).
+</p>
+<p>
+  They communicate with the driver simply by reading
+  from <code>STDIN</code> and writing to <code>STDOUT</code>. They
+  don't (and shouldn't) know anything about Catechesis. They should
+  know only three things:
+</p>
+<ul>
+  <li>The format of the JSON they will receive</li>
+  <li>The format of the JSON they will send back</li>
+  <li>How to use the implementation they are testing</li>
+</ul>
+<p>
+  Remember that communication with the driver is via pipes, to your
+  shim must ensure that its writes to <code>STDOUT</code> are
+  unbuffered/autoflushed, or are manually flushed with every write. If
+  this does not happen, deadlock will occur and the watchdog will kill
+  the shim process and the driver.
+</p>

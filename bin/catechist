@@ -1,0 +1,161 @@
+#!/usr/bin/env perl
+BEGIN { if ($ARGV[0] eq '-b') { shift; use lib './blib/lib/' } }
+
+use strict;
+use warnings;
+use IPC::Open2;
+use JSON;
+use Firepear::Catechesis;
+
+=head1 NAME
+
+catechist - Driver script for the Catechesis testing framework
+
+=head1 SYNOPSIS
+
+    catechist --shim SHIM [OPTIONS] FILE [FILE..]
+
+=head1 OPTIONS
+
+    --shim    -s  Set the shim program to use for this run. Required.
+
+    --timeout -t  Set the watchdog timeout, in seconds (default: )
+    --keeplog -k  Tell watchdog not to delete its log after a successful run
+
+              -b  Add ./blib to @INC, for testing. Must be first argument
+                  if present.
+
+=head1 DESCRIPTION
+
+For each C<FILE> specified, C<catechist> will parse it as a Catechesis
+script and have C<SHIM> execute the tests contained therein. The
+results from C<SHIM> will then be evaluated, and a standard TAP stream
+generated representing the success or failure of each individual test.
+
+For technical details, see C<perldoc Firepear::Catechesis>.
+
+=cut
+
+
+# simple arg handling
+die "Error: required arguments missing. See 'man catechist' for more info\n"
+  unless @ARGV;
+my $ttl = 60;
+my $kl = 0;
+my $shim = '';
+while (@ARGV and $ARGV[0] =~ /^\-/) {
+  my $arg = shift;
+  if ($arg eq '--timeout' or $arg eq '-t') {
+    my $val = shift;
+    die "Error: Value supplied to --timeout must be numeric\n"
+      if (!defined $val or $val =~ /\D/);
+    $ttl = $val;
+  }
+  $shim = shift if ($arg eq '--shim' or $arg eq '-s');
+  $kl = 1 if ($arg eq '--keeplog' or $arg eq '-k');
+}
+die "Error: shim must exist and be executable\n"
+  unless (-x $shim);
+
+# get Catechesis object
+my $cat = Firepear::Catechesis->new(tests => \@ARGV);
+
+# initialize and launch watchdog
+$SIG{PIPE} = 'IGNORE';
+my $watchdog = initwd();
+my $wdpipe;
+my $wdmsg    = { masterpid => $$, ttl => $ttl, kl => $kl, msg => '' };
+my $wdpid = open $wdpipe, "|-",  "perl -e '$watchdog'"
+  or die "Error: Can't spawn watchdog: $!";
+select $wdpipe;
+$| = 1;
+select STDOUT;
+print $wdpipe encode_json($wdmsg),"\n";
+
+# and then the shim
+$wdmsg->{shimpid} = open2(\*Shimread, \*Shimwrite, $shim)
+  or die "Error: Can't spawn shim: $!";
+$wdmsg->{msg} = "Starting up"; print $wdpipe encode_json($wdmsg),"\n";
+
+
+
+#----------------------------------------------------------- driver loop
+
+while (1) {
+  # get a stanza
+  my $stanza = $cat->fetch;
+  # we're done if we see "EOF" in an error. Ignore other fetch
+  # errors.
+  if ($cat->has_err) {
+    last if $stanza->{msg} eq "EOF";
+    next;
+  }
+  # we don't want to handle environment stanzas either (though some
+  # people might)
+  next if $stanza->{type} eq 'environment';
+
+  # if we're here, then the stanza is a test, and the Cat stack
+  # guarantees us that it is well-formed. All we need to do is send
+  # stuff to the shim
+  print Shimwrite $stanza->{directives}{send},"\n";
+  $wdmsg->{msg} = "Sent test ";
+  $wdmsg->{msg} .= $stanza->{directives}{desc} if $stanza->{directives}{desc};
+  print $wdpipe encode_json($wdmsg),"\n";
+  # get back the answer
+
+  my $answer = <Shimread>;
+  #exit;
+
+  $wdmsg->{msg} = "Got answer"; print $wdpipe encode_json($wdmsg),"\n";
+  # and ask the Cat stack if it's right or not
+  $cat->compare($stanza->{directives}{expect}, $answer);
+}
+
+# shut down shim and watchdog
+print Shimwrite encode_json({command => 'quit'});
+$wdmsg->{msg} = 'WDQUIT'; print $wdpipe encode_json($wdmsg),"\n";
+
+
+
+#-------------------------------------------------------------- watchdog
+
+sub initwd {
+return <<WATCHDOG;
+use strict; use warnings; use IO::Select; use JSON;
+my \$msg; my \$ttl = 60; my \$keeplog = 0;
+my \$lo; my \$cur = "";
+open my \$log, ">", "watchdog.log" or die \$!; my \$tp= `date "+%Y%m%d %H:%M:%S"`;
+my \$s = IO::Select->new; \$s->add(\\*STDIN);
+my \$time = time; my \$lastseen = \$time;
+while (1) {
+ print \$log \$tp; my \@ready = \$s->can_read(0);
+ if (defined \$ready[0]) {
+  my \$h = \$ready[0];
+  my \$count = sysread \$h, \$cur, 16384; die "\$!\\n" unless \$count;
+  \$cur = \$lo . \$cur if \$lo; undef \$lo;
+  my \@lines = split /\\n/, \$cur;
+  if (\$cur !~ /\\n/) { \$lo = \$lines[-1]; pop \@lines }
+  for (split /\\n/, \$cur) {
+    \$msg = decode_json(\$_);
+    if (\$msg->{msg} eq "WDQUIT")
+     { print \$log " End\\n"; close \$log; unlink "watchdog.log" unless \$keeplog; exit }
+    if (\$msg->{ttl} != \$ttl)
+     { \$ttl = \$msg->{ttl}; print \$log " TTL set to \$ttl\\n" }
+    if (\$msg->{kl} != \$keeplog)
+     { \$keeplog = \$msg->{kl}; print \$log " Keeplog set to \$keeplog\\n" }
+    print \$log " \$msg->{msg}\\n" if \$msg->{msg};
+  }
+  \$lastseen = time;
+ } else {
+  if (time - \$lastseen > \$ttl) {
+   print \$log " Master is deadlocked: killing.\\n";
+   system("kill -9 \$msg->{shimpid}");
+   system("kill -9 \$msg->{masterpid}");
+   exit;
+  }
+  print \$log " Seconds until kill: ", \$ttl - (time - \$lastseen),"\\n";
+ }
+ sleep 1; \$time = time; \$tp = `date "+%Y%m%d %H:%M:%S"`;
+}
+WATCHDOG
+}

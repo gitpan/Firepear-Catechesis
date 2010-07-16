@@ -1,0 +1,9 @@
+# this is a test file
+
+# it contains one test stanza, which is empty, but has an error in
+# that it has no stanza label.
+
+begin 
+end
+
+# end of file

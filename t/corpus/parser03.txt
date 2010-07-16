@@ -1,0 +1,10 @@
+# this is a test file
+
+# bad directive test
+
+begin test
+  shim ./bin/foo
+  baddirective bar
+end
+
+# end of file
