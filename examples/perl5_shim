@@ -1,0 +1,56 @@
+#!/usr/bin/env perl
+
+# Example shim for Catechesis, in Perl 5
+
+# Run from inside the examples directory only!
+
+use warnings;
+use strict;
+use lib '.';
+
+use JSON;
+use MathAPI;
+
+$| = 1; # ensure autoflush/unbuffered mode on STDOUT!
+        # if you don't do this, you'll deadlock
+
+# instantiate a F::C::MAPI::P5 object
+my $math = MathAPI->new;
+
+# Initialize our answer hashref
+my $answer = { command => '', result => '' };
+
+# loop while there is data on STDIN, accepting one line at a time
+while (<STDIN>) {
+  # first, reset answer bits
+  $answer->{command} = '';
+  $answer->{result}  = '';
+  delete $answer->{err_msg};
+
+  # then vivify the input
+  my $msg = decode_json($_);
+
+  # shutdown handler
+  exit if ($msg->{QUIT} and $msg->{QUIT} eq 'QUIT');
+
+  # we're not shutting down, so set the command in the answer
+  $answer->{command} = $msg->{command};
+
+  # and let's do it.
+  my $response;
+  $response = $math->add($msg->{operands}[0], $msg->{operands}[1])
+    if ($msg->{command} eq "add");
+  $response = $math->subtract($msg->{operands}[0], $msg->{operands}[1])
+    if ($msg->{command} eq "subtract");
+  $response = $math->multiply($msg->{operands}[0], $msg->{operands}[1])
+    if ($msg->{command} eq "multiply");
+  $response = $math->divide($msg->{operands}[0], $msg->{operands}[1])
+    if ($msg->{command} eq "divide");
+  if ($response =~ /^\D/) {
+    $answer->{result} = "ERROR";
+    $answer->{err_msg} = $response;
+  } else {
+    $answer->{result} = $response;
+  }
+  print encode_json($answer),"\n";
+}

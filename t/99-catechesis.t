@@ -72,9 +72,7 @@ is ($msg->{type}, 'error', '#3 should be an error');
 is ($msg->{code}, 'BEGINWITHOUTLABEL',  '#3 no label on begin');
 is ($msg->{msg},  "No label on 'begin' at t/corpus/parser00.txt line 6", "#3 no stanza label");
 
-
 # test-before-plan fail
-
 $cat = Firepear::Catechesis-> new(tests => 't/corpus/cat01.txt', shh => 1);
 $msg = $cat->fetch;
 is ($cat->has_err, 1);

@@ -5,7 +5,8 @@ README
 bin/catechist
 docs/main.html
 docs/math_api.html
-examples/math.pl
+examples/perl5_shim
+examples/MathAPI.pm
 examples/test_suite.txt
 lib/Firepear/Catechesis.pm
 lib/Firepear/Catechesis/Parser.pm

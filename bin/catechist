@@ -112,7 +112,7 @@ while (1) {
 }
 
 # shut down shim and watchdog
-print Shimwrite encode_json({command => 'quit'});
+print Shimwrite encode_json({QUIT => 'QUIT'});
 $wdmsg->{msg} = 'WDQUIT'; print $wdpipe encode_json($wdmsg),"\n";
 
 

@@ -22,22 +22,24 @@
   before shutting itself down.
 </p>
 <p>
-  The Catechesis distribution includes the driver, which is written in
-  Perl 5. One shim is needed for each implementation of the spec or
-  API you need to test, and it should be written in the same language
-  as your implementation.
+  The Catechesis distribution includes the driver and watchdog, which
+  are written in Perl 5. One shim is needed for each implementation of
+  the spec or API you need to test, and it should be written in the
+  same language as your implementation.
 </p>
 
 <h3 id="run">Running Tests</h3>
 <p>
-  For complete documentation, see <code>'man catechist'</code> after
-  installing Catechesis. The general form is:
+  Tests are run with <code>catechist</code>, the included driver
+  program. For complete documentation, see <code>'man
+  catechist'</code> after installing Catechesis. The general form is:
 </p>
 <pre>catechist --shim SHIM [OPTIONS] TEST_FILE [TEST_FILE..]</pre>
 <p>
   So to run the example suite from within the Catechesis distribution:
 </p>
-<pre>$ ./bin/catechist --shim ./examples/math.pl ./examples/test_suite.txt</pre>
+<pre>$ cd examples
+$ ../bin/catechist --shim ./perl5_shim test_suite.txt</pre>
 
 <h3 id="scripts">Writing Test Scripts</h3>
 <p>
@@ -172,9 +174,14 @@ end
   <li>How to use the implementation they are testing</li>
 </ul>
 <p>
-  Remember that communication with the driver is via pipes, to your
+  Remember that communication with the driver is via pipes, so your
   shim must ensure that its writes to <code>STDOUT</code> are
   unbuffered/autoflushed, or are manually flushed with every write. If
   this does not happen, deadlock will occur and the watchdog will kill
   the shim process and the driver.
+</p>
+<p>
+  Finally, all shims should terminate execution when receiving a
+  message that contains the key <code>QUIT</code> with a value
+  of <code>QUIT</code>.
 </p>

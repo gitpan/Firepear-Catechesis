@@ -10,15 +10,15 @@ use Firepear::Catechesis::Util;
 
 =head1 NAME
 
-Firepear::Catechesis - The great new Firepear::Catechesis!
+Firepear::Catechesis - Universal black-box testing
 
 =head1 VERSION
 
-Version 1.000
+Version 1.001
 
 =cut
 
-our $VERSION = '1.000';
+our $VERSION = '1.001';
 
 
 =head1 IMPORTANT
@@ -130,7 +130,6 @@ sub fetch {
   my ($self) = @_;
   my $p = $self->{_p};
   my $tap = $self->{_t};
-  $self->{_env}{error} = 0;
 
   # get stanza, stow, and set it as last received
   $self->{_test} = $p->yield;
@@ -208,7 +207,6 @@ otherwise.
 
 sub has_err {
   my ($self) = @_;
-  return 1 if $self->{_env}{error};
   return 0 unless defined $self->{_last};
   my $msg = $self->{_last}{ $self->{_last}{ptr} };
   return 1 if ($msg->{type} eq 'error');

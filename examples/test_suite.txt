@@ -1,16 +1,46 @@
-# this is the catechesis example test suite
+# This is the test suite for the Math API
+#
+# It is used with *all* the example shims in this directory.
 
-# it should be used with *all* the example shims in this directory.
-# for more information, see the docs.
+# Shim Data Formatting
+# --------------------
+# 
+# The 'send' directive should be formatted thus:
+#
+#  { "command":"OPERATION",
+#    "operands":[ x, y, ..., z ] }
+#
+# Where OPERATION is one of the operations defined
+# below, and 'x, y, ..., z' are the values to be acted
+# upon..
+#
+# The 'expect' directive (and therefore the data coming back from the
+# shim) should be formatted thus:
+#
+#  { "command":"OPERATION", "result":RESULT }
+#
+#  Where "OPERATION" is the operation specified in the 'sent'
+#  directive, and "RESULT" is the result of evaluating the given
+#  operation with the given operands.
+#
+#  In the case of an error, the value of "RESULT" must be the string
+#  "ERROR", and a third key, "err_msg", must be added. It will hold
+#  the human-readable message describing the problem:
+#
+#  { "command":"OPERATION", "result":"ERROR", "err_msg":"MESSAGE" }
 
-# first we need to set out test plan to the number of tests in this
-# file
+
+
+# first we need to set a test plan. it should be set to the number of
+# tests in this file
+
 begin environment
   diag Running the standard Catechesis test suite!
-  plan 11
+  plan 8
 end
 
 # now we'll run some successful tests
+
 begin test
   diag These tests should succeed if you have implemented the spec commands correctly
   desc Simple addition
@@ -37,29 +67,9 @@ begin test
 end
 
 # followed by API-specified exceptions
+
 begin test
   diag These should pass if you have implemented spec error handling correctly
-  desc Null send produces "no command" err
-  send {}
-  expect { "command":"", "result":"ERROR", \
-           "err_msg":"No command found. Invalid message"}
-end
-
-begin test
-  desc Bad command
-  send { "command":"foo" }
-  expect { "command":"foo", "result":"ERROR", \
-           "err_msg":"Unknown command: foo" }
-end
-
-begin test
-  desc 'operands' is not list
-  send { "command":"add", "operands":1 }
-  expect {"command":"add", "result":"ERROR", \
-          "err_msg":"The value of operands must be usable as a list" }
-end
-
-begin test
   desc Missing operands 1
   send { "command":"add" }
   expect {"command":"add", "result":"ERROR", \

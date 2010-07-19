@@ -1,5 +1,26 @@
 Revision history for Firepear-Catechesis
 
+
+1.001    19 Jul 2010
+
+         The shim shutdown message has been changed from the
+         undocumented {"command":"quit"} to {"QUIT":"QUIT}, which is
+         documented in the Writing Shims section of the main doc.
+
+         The example shim has been reworked to be much more like a
+         "real" shim -- it now uses an external implementation of the
+         Math API.
+
+         As a result, the Math API has been simplified due to much
+         driver-to-shim-specific verbiage being removed from it (and
+         relocated to the test suite)
+
+         As a result, the test suite has been shortened.
+
+         No bugfixes or behavioral changes in the F::C codebase.
+
+
 1.000    16 Jul 2010
+
          First version, released on an unsuspecting world.
 
