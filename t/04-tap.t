@@ -12,37 +12,37 @@ eval {
 is ($@, "Bail out! Can't open test output file for F::C::TAP\n");
 
 # no struct fail
-my $tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+my $tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit;
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 my $tapout = <TAP>;
 is ($tapout, "Bail out! No struct was passed to TAP emitter\n");
 close TAP;
 
 # not hashref/proper struct fails
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit("foo");
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "Bail out! Malformed struct was passed to TAP emitter\n");
 close TAP;
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit({foo => 1});
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "Bail out! Malformed struct was passed to TAP emitter\n");
 close TAP;
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit( { directives => { diag => "diag msg" } } );
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "Bail out! Malformed struct was passed to TAP emitter\n");
 close TAP;
 
 # diags
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit( { type => "environment", directives => { diag => "diag msg" } } );
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "# diag msg\n");
 close TAP;
@@ -51,26 +51,26 @@ close TAP;
 #
 # bailout
 my $struct = { type => 'error', code => 'BAILOUT', msg => 'test' };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "Bail out! test\n");
 close TAP;
 # "normal"
 $struct = { type => 'error', code => 'FOO', msg => 'test' };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "not ok 0 FOO: test\n");
 close TAP;
 # normal with desc
 $struct = { type => 'error', code => 'FOO', msg => 'test',
             directives => {desc => 'bar'} };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 $tapout = <TAP>;
 is ($tapout, "not ok 0 FOO: test in test 'bar'\n");
 close TAP;
@@ -80,9 +80,9 @@ $struct = { type => 'error', code => 'FOO', msg => 'test',
                           got => ['d','e'],
                           noteq => { f => {expected => 1, got => 2},
                                      g => {expected => 'x', got => 'y'} } } };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 @tapout = <TAP>;
 is ($tapout[0], "not ok 0 FOO: test\n");
 is ($tapout[1], "# the following keys were expected but not found in shim response:\n");
@@ -98,25 +98,27 @@ close TAP;
 # environment
 $struct = { type => 'environment',
             directives => { shim => 'foo', plan => 6  } };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 @tapout = <TAP>;
 is ($tapout[0], "1..6\n");
 
 # success
 my $tstruct = { type => 'test' };
 $struct = { type => 'match' };
-$tap = Firepear::Catechesis::TAP->new(test => "/tmp/fctap.txt");
+$tap = Firepear::Catechesis::TAP->new(test => "./t/corpus/fctap.txt");
 $tap->emit($tstruct);
 $tap->emit($struct);
 $tap->emit($tstruct);
 $tap->emit($struct);
 $tap->emit($tstruct);
 $tap->emit($struct);
-open TAP,'<',"/tmp/fctap.txt";
+open TAP,'<',"./t/corpus/fctap.txt";
 @tapout = <TAP>;
 is ($tapout[0], "ok 1\n");
 is ($tapout[1], "ok 2\n");
 is ($tapout[2], "ok 3\n");
 is ($tapout[3], undef);
+
+unlink "./t/corpus/fctap.txt";

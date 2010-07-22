@@ -1,6 +1,11 @@
 Revision history for Firepear-Catechesis
 
 
+1.002    21 Jul 2010
+
+         Changes to test suite to avoid failures on 86pc-solaris-64int
+         2.11
+
 1.001    19 Jul 2010
 
          The shim shutdown message has been changed from the

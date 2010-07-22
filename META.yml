@@ -15,7 +15,7 @@ name: Firepear-Catechesis
 provides:
   Firepear::Catechesis:
     file: lib/Firepear/Catechesis.pm
-    version: 1.001
+    version: 1.002
   Firepear::Catechesis::Parser:
     file: lib/Firepear/Catechesis/Parser.pm
     version: 1.000
@@ -32,4 +32,4 @@ requires:
   JSON: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.001
+version: 1.002

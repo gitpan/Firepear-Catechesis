@@ -14,11 +14,11 @@ Firepear::Catechesis - Universal black-box testing
 
 =head1 VERSION
 
-Version 1.001
+Version 1.002
 
 =cut
 
-our $VERSION = '1.001';
+our $VERSION = '1.002';
 
 
 =head1 IMPORTANT
